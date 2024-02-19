@@ -1,0 +1,65 @@
+>>> from news.models import *
+>>> user_1 = User.objects.create_user(username='Username-1')
+>>> user_2 = User.objects.create_user('Username-2')
+>>> author_1 = Author.objects.create(user=user_1)
+>>> author_2 = Author.objects.create(user=user_2)
+>>> category_1 = Category.objects.create(name='Про животных')
+>>> category_2 = Category.objects.create(name='Про спорт')
+>>> category_3 = Category.objects.create(name='Баяны')
+>>> category_4 = Category.objects.create(name='Политика')
+>>> post_1 = Post.objects.create(author=author_1, post_type='AR', title='Title_1', content='Content_1')
+>>> post_2 = Post.objects.create(author=author_2, post_type='NE', title='Title_2', content='Content_2')
+>>> post_3 = Post.objects.create(author=author_1, post_type='AR', title='Title_3', content='Content_3')
+>>> post_1.categories.add(category_1, category_2)
+>>> post_2.categories.add(category_3, category_4)
+>>> post_3.categories.add(category_1, category_4, category_2)
+>>> comment_1 = Comment.objects.create(post=post_1, user=user_1, content='Cont_1')
+>>> comment_2 = Comment.objects.create(post=post_2, user=user_2, content='Cont_2')
+>>> comment_3 = Comment.objects.create(post=post_3, user=user_2, content='Cont_3')
+>>> comment_4 = Comment.objects.create(post=post_1, user=user_1, content='Cont_4')
+>>> post_1.like()
+>>> post_2.dislike()
+>>> post_2.rating
+>>> post_2.dislike()
+>>> comment_1.dislike()
+>>> comment_2.like()
+>>> comment_2.like()
+>>> comment_1.dislike()
+>>> post_2.like()
+>>> post_2.dislike()
+>>> post_2.dislike()
+>>> post_2.dislike()
+>>> post_3.like()
+>>> post_3.like()
+>>> post_3.like()
+>>> post_3.like()
+>>> post_3.like()
+>>> post_3.like()
+>>> post_3.like()
+>>> comment_3.like()
+>>> comment_4.like()
+>>> author_1.rating
+0
+>>> author_1.update_rating()
+>>> author_1.rating
+23
+>>> author_2.rating
+0
+>>> author_2.update_rating()
+>>> author_2.rating
+-7
+>>> best_user = Author.objects.order_by('-rating').values('user__username', 'rating')
+>>> best_user
+<QuerySet [{'user__username': 'Username-1', 'rating': 23}, {'user__username': 'Username-2', 'rating': -7}]>
+>>> best_user = Author.objects.order_by('-rating').values('user__username', 'rating').first()
+>>> best_user
+{'user__username': 'Username-1', 'rating': 23}
+>>> best_post = Post.objects.order_by('-rating').values('time_create', 'author__user__username', 'rating', 'title').first()
+>>> best_post
+{'time_create': datetime.datetime(2023, 7, 4, 5, 29, 31, 534500, tzinfo=datetime.timezone.utc), 'author__user__username': 'Username-1', 'rating': 7, 'title': 'Title_3'}
+>>> best_post_preview = Post.objects.order_by('-rating').first()
+>>> best_post_preview.preview()
+'Content_3'
+>>> comments_for_best_post = Comment.objects.filter(post=best_post_preview).values('time_create', 'user__username', 'rating', 'content')
+>>> comments_for_best_post
+<QuerySet [{'time_create': datetime.datetime(2023, 7, 4, 6, 1, 33, 314500, tzinfo=datetime.timezone.utc), 'user__username': 'Username-2', 'rating': 1, 'content': 'Cont_3'}]>
