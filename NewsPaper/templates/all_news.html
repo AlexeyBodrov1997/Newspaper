@@ -1,0 +1,76 @@
+{% extends 'flatpages/default.html' %}
+
+{% load censor_filter %}
+
+{% block title %}
+Новости
+{% endblock title %}
+
+{% load static %}
+
+{% block content %}
+<h1><a href="/">Регистрация/Авторизация</a></h1>{% csrf_token %}
+{% if is_not_premium %}
+<button> <a href="sign/upgrade/"> Хочу Premium!</a> </button>
+{% endif %}
+<h1>Все Новости</h1>
+<h1><a href="http://127.0.0.1:8000/news/search" class="button">Поиск новостей</a></h1>
+
+
+<h3> {{ next_sale|default_if_none:"Чуть позже сообщим о распродаже!" }} </h3>
+
+<!--   <form action="" method="get">-->
+<!--       {{ filterset.form.as_p }}-->
+<!--       <input type="submit" value="Найти" />-->
+<!--   </form>-->
+
+<hr>
+{% if all_news %}
+<h1>Всего новостей: {{ all_news|length }}</h1>
+<button><a href="http://127.0.0.1:8000/news/create" class="button">Создай свою новость</a></button>
+<button><a href="http://127.0.0.1:8000/news/articles/create" class="button">или статью</a></button>
+
+    <table>
+        <tr>
+            <td>Заголовок</td>
+            <td>Категория</td>
+            <td>Дата публикации</td>
+            <td>Краткое описание</td>
+        </tr>
+        {% for news in all_news %}
+        <tr>
+            <td><a href="http://127.0.0.1:8000/news/{{ news.pk }}"> {{ news.title|censor:news.title }}</a></td>
+            <td>{% for category in news.categories.all %}
+                    <a href="{% url 'category_list' category.id %}"> {{ category }}</a>
+                {% endfor %}</td>
+            <td>{{ news.time_create|date:'d.m.Y' }}</td>
+            <td>{{ news.content|truncatechars:20|censor:news.content }}</td>
+            <td><button><a href="http://127.0.0.1:8000/news/{{ news.pk }}/edit" class="button">Редактировать</a></button></td>
+            <td><button><a href="http://127.0.0.1:8000/news/{{ news.pk }}/delete" class="button">Удалить</a></button></td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <h2>Новостей нет!</h2>
+{% endif %}
+  {# ПАГИНАЦИЯ #}
+   {% if page_obj.has_previous %}
+       <a href="?page=1">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+       <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+{% endblock content %}
